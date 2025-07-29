@@ -197,15 +197,7 @@
     </style>
 </head>
 <body>
-    <script>
-        // 認証チェック
-        const isAuthenticated = sessionStorage.getItem('adminAuthenticated');
-        const authTime = sessionStorage.getItem('authTime');
-        
-        if (!isAuthenticated || !authTime || (Date.now() - parseInt(authTime) > 3600000)) {
-            window.location.href = 'admin-login.html';
-        }
-    </script>
+    <script src="js/auth-check.js"></script>
     
     <div class="container">
         <div class="admin-info">

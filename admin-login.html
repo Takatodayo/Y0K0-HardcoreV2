@@ -232,9 +232,15 @@
                     sessionStorage.setItem('adminAuthenticated', 'true');
                     sessionStorage.setItem('authTime', Date.now());
                     
-                    // 管理者ダッシュボードへリダイレクト
+                    // リダイレクトURLがある場合はそこへ、なければダッシュボードへ
                     setTimeout(() => {
-                        window.location.href = 'admin-dashboard.html';
+                        const redirectUrl = sessionStorage.getItem('redirectUrl');
+                        if (redirectUrl) {
+                            sessionStorage.removeItem('redirectUrl');
+                            window.location.href = redirectUrl;
+                        } else {
+                            window.location.href = 'admin-dashboard.html';
+                        }
                     }, 1000);
                 } else {
                     // エラー表示

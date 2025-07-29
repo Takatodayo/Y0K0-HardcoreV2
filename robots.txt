@@ -1,0 +1,18 @@
+# robots.txt
+# 検索エンジンのクローリングを制限
+
+User-agent: *
+# ルールページは許可
+Allow: /index.html
+Allow: /$
+
+# 管理者ページはクロール禁止
+Disallow: /admin-
+Disallow: /penalty
+Disallow: /point-calculator
+
+# JavaScriptファイルもクロール禁止
+Disallow: /js/
+
+# Sitemap（将来的に追加する場合）
+# Sitemap: https://your-github-username.github.io/sitemap.xml

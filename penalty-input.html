@@ -188,16 +188,7 @@
     </style>
 </head>
 <body>
-    <script>
-        // 認証チェック
-        const isAuthenticated = sessionStorage.getItem('adminAuthenticated');
-        const authTime = sessionStorage.getItem('authTime');
-        
-        // 認証がない、または1時間以上経過している場合はリダイレクト
-        if (!isAuthenticated || !authTime || (Date.now() - parseInt(authTime) > 3600000)) {
-            window.location.href = 'admin-login.html';
-        }
-    </script>
+    <script src="js/auth-check.js"></script>
     
     <div class="container">
         <h1>🎮 罰ゲーム対象者入力 🎮</h1>
