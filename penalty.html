@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>罰ゲーム発表 - ハードコア</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .reveal-section {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #1a0000 0%, #4a0000 100%);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.3);
+            border: 3px solid #ff0000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reveal-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,0,0,0.1) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        h1 {
+            font-size: 4em;
+            color: #ff0000;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(255, 0, 0, 0.5);
+            margin-bottom: 30px;
+            animation: glow 2s ease-in-out infinite alternate;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(255, 0, 0, 0.5); }
+            to { text-shadow: 0 0 30px rgba(255, 0, 0, 1), 0 0 60px rgba(255, 0, 0, 0.8); }
+        }
+
+        .loser-name {
+            font-size: 3em;
+            color: #ffd700;
+            margin: 30px 0;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+            animation: shake 0.5s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .death-count {
+            font-size: 2em;
+            margin: 20px 0;
+            color: #ff6666;
+            position: relative;
+            z-index: 1;
+        }
+
+        .death-count strong {
+            color: #ff0000;
+            font-size: 1.5em;
+        }
+
+        .penalty-box {
+            background-color: rgba(0, 0, 0, 0.8);
+            border: 3px solid #ff0000;
+            border-radius: 15px;
+            padding: 40px;
+            margin: 40px auto;
+            max-width: 600px;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+
+        .penalty-title {
+            color: #ff0000;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .penalty-content {
+            font-size: 1.8em;
+            line-height: 1.8;
+            color: #ffffff;
+            margin: 20px 0;
+            animation: fadeIn 2s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .skull {
+            font-size: 5em;
+            animation: rotate 4s linear infinite;
+            display: inline-block;
+            margin: 20px;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .reveal-button {
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            font-size: 1.5em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 30px;
+            position: relative;
+            z-index: 1;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 5px 20px rgba(255, 0, 0, 0.5);
+        }
+
+        .reveal-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(255, 0, 0, 0.8);
+        }
+
+        .reveal-button:active {
+            transform: scale(0.95);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .fireworks {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .firework {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            background: #ff0000;
+            border-radius: 50%;
+            animation: explode 1s ease-out forwards;
+        }
+
+        @keyframes explode {
+            0% { 
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% { 
+                transform: translate(var(--x), var(--y)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .stats-table {
+            margin: 30px auto;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.5);
+            position: relative;
+            z-index: 1;
+        }
+
+        .stats-table th,
+        .stats-table td {
+            padding: 15px 30px;
+            border: 1px solid #ff0000;
+            text-align: center;
+        }
+
+        .stats-table th {
+            background: rgba(255, 0, 0, 0.3);
+            color: #ffffff;
+            font-size: 1.2em;
+        }
+
+        .stats-table td {
+            font-size: 1.1em;
+        }
+
+        .highlight-row {
+            background: rgba(255, 0, 0, 0.2);
+            font-weight: bold;
+        }
+
+        /* 点滅する背景効果 */
+        .flash-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.3);
+            animation: flash 0.5s ease-in-out 3;
+            pointer-events: none;
+            z-index: 9998;
+        }
+
+        @keyframes flash {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        /* シール選択スタイル */
+        .penalty-selection {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .seal-card {
+            position: relative;
+            width: 150px;
+            height: 200px;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease;
+        }
+
+        .seal-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .seal {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5);
+            border: 3px solid #b8860b;
+            transition: all 0.5s ease;
+            z-index: 2;
+        }
+
+        .seal.peeling {
+            animation: peel 1.5s ease-out forwards;
+        }
+
+        @keyframes peel {
+            0% {
+                transform: rotateY(0deg) scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: rotateY(90deg) scale(1.1) translateX(50px);
+                opacity: 0.8;
+            }
+            100% {
+                transform: rotateY(180deg) scale(0) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #2a2a2a;
+            border-radius: 10px;
+            border: 2px solid #ff0000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.1em;
+            color: #ffffff;
+        }
+
+        .penalty-result {
+            animation: fadeIn 1s ease-in;
+        }
+
+        .selected-animation {
+            animation: glow 2s ease-in-out infinite alternate, pulse 1s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5em; }
+            .loser-name { font-size: 2em; }
+            .penalty-title { font-size: 1.8em; }
+            .penalty-content { font-size: 1.3em; }
+            .reveal-button { 
+                padding: 15px 40px;
+                font-size: 1.2em;
+            }
+            .seal-card {
+                width: 120px;
+                height: 160px;
+            }
+            .seal {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="reveal-section">
+            <h1>⚠️ 罰ゲーム発表 ⚠️</h1>
+            
+            <div class="skull">💀</div>
+            
+            <button class="reveal-button" onclick="revealPenalty()">
+                罰ゲームを確認する
+            </button>
+            
+            <div id="penalty-reveal" class="hidden">
+                <div class="loser-name" id="loser-name">
+                    <!-- プレイヤー名をここに表示 -->
+                </div>
+                
+                <div class="death-count">
+                    総ポイント: <strong id="total-points">999</strong>pt
+                </div>
+                
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>死因</th>
+                            <th>回数</th>
+                            <th>ポイント</th>
+                        </tr>
+                    </thead>
+                    <tbody id="death-stats">
+                        <!-- 死因統計をここに表示 -->
+                    </tbody>
+                </table>
+                
+                <div class="penalty-box">
+                    <div class="penalty-title">罰ゲームを選んでください</div>
+                    <div class="penalty-selection" id="penalty-selection">
+                        <!-- シールが表示される -->
+                    </div>
+                    <div class="penalty-result hidden" id="penalty-result">
+                        <div class="penalty-title">選ばれた罰ゲーム</div>
+                        <div class="penalty-content" id="penalty-content">
+                            <!-- 選ばれた罰ゲーム内容 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="fireworks" class="fireworks hidden"></div>
+    <div id="flash-bg" class="flash-bg hidden"></div>
+    
+    <script>
+        // URLパラメータからデータを取得
+        const urlParams = new URLSearchParams(window.location.search);
+        const penaltyData = {
+            playerName: urlParams.get('player') || "プレイヤー名",
+            totalPoints: parseInt(urlParams.get('total')) || 0,
+            deaths: JSON.parse(urlParams.get('deaths') || '[]'),
+            penalties: JSON.parse(urlParams.get('penalties') || '["罰ゲーム1", "罰ゲーム2", "罰ゲーム3"]')
+        };
+        
+        function revealPenalty() {
+            const button = document.querySelector('.reveal-button');
+            const reveal = document.getElementById('penalty-reveal');
+            const fireworks = document.getElementById('fireworks');
+            const flashBg = document.getElementById('flash-bg');
+            
+            // ボタンを非表示
+            button.style.display = 'none';
+            
+            // フラッシュ効果
+            flashBg.classList.remove('hidden');
+            setTimeout(() => flashBg.classList.add('hidden'), 1500);
+            
+            // データを表示
+            document.getElementById('loser-name').textContent = penaltyData.playerName;
+            document.getElementById('total-points').textContent = penaltyData.totalPoints;
+            
+            // シール選択を表示
+            createPenaltySeals();
+            
+            // 死因統計を表示
+            const statsBody = document.getElementById('death-stats');
+            statsBody.innerHTML = '';
+            penaltyData.deaths.forEach(death => {
+                if (death.count > 0) {
+                    const row = document.createElement('tr');
+                    row.className = death.points >= 100 ? 'highlight-row' : '';
+                    row.innerHTML = `
+                        <td>${death.cause}</td>
+                        <td>${death.count}回</td>
+                        <td>${death.points}pt</td>
+                    `;
+                    statsBody.appendChild(row);
+                }
+            });
+            
+            // 内容を表示
+            reveal.classList.remove('hidden');
+            
+            // 花火エフェクト
+            createFireworks();
+            
+            // スクロール
+            setTimeout(() => {
+                reveal.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 500);
+        }
+        
+        function createFireworks() {
+            const fireworksContainer = document.getElementById('fireworks');
+            fireworksContainer.classList.remove('hidden');
+            
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * window.innerWidth;
+                    const y = Math.random() * window.innerHeight * 0.5;
+                    
+                    for (let j = 0; j < 30; j++) {
+                        const firework = document.createElement('div');
+                        firework.className = 'firework';
+                        firework.style.left = x + 'px';
+                        firework.style.top = y + 'px';
+                        
+                        const angle = (Math.PI * 2 * j) / 30;
+                        const velocity = 100 + Math.random() * 100;
+                        const vx = Math.cos(angle) * velocity;
+                        const vy = Math.sin(angle) * velocity;
+                        
+                        firework.style.setProperty('--x', vx + 'px');
+                        firework.style.setProperty('--y', vy + 'px');
+                        
+                        const colors = ['#ff0000', '#ff6600', '#ffff00', '#ff00ff'];
+                        firework.style.background = colors[Math.floor(Math.random() * colors.length)];
+                        
+                        fireworksContainer.appendChild(firework);
+                        
+                        setTimeout(() => firework.remove(), 1000);
+                    }
+                }, i * 300);
+            }
+            
+            setTimeout(() => fireworksContainer.classList.add('hidden'), 3000);
+        }
+        
+        function createPenaltySeals() {
+            const selectionDiv = document.getElementById('penalty-selection');
+            selectionDiv.innerHTML = '';
+            
+            // 3つのシールを作成
+            const sealEmojis = ['🎯', '💀', '🔥'];
+            
+            penaltyData.penalties.forEach((penalty, index) => {
+                const card = document.createElement('div');
+                card.className = 'seal-card';
+                card.dataset.penalty = penalty;
+                card.dataset.index = index;
+                
+                const seal = document.createElement('div');
+                seal.className = 'seal';
+                seal.textContent = sealEmojis[index];
+                
+                const back = document.createElement('div');
+                back.className = 'card-back';
+                back.textContent = '???';
+                
+                card.appendChild(back);
+                card.appendChild(seal);
+                
+                card.addEventListener('click', () => selectPenalty(card, penalty));
+                
+                selectionDiv.appendChild(card);
+            });
+        }
+        
+        function selectPenalty(card, penalty) {
+            // 既に選択されている場合は無視
+            if (card.querySelector('.seal').classList.contains('peeling')) {
+                return;
+            }
+            
+            // 他のカードを無効化
+            document.querySelectorAll('.seal-card').forEach(c => {
+                if (c !== card) {
+                    c.style.pointerEvents = 'none';
+                    c.style.opacity = '0.5';
+                }
+            });
+            
+            // シールを剥がすアニメーション
+            const seal = card.querySelector('.seal');
+            seal.classList.add('peeling');
+            
+            // 選択されたカードを光らせる
+            card.classList.add('selected-animation');
+            
+            // 罰ゲーム内容を表示
+            setTimeout(() => {
+                card.querySelector('.card-back').textContent = penalty;
+                card.querySelector('.card-back').style.fontSize = '0.9em';
+                card.querySelector('.card-back').style.padding = '10px';
+                
+                // 結果セクションを表示
+                setTimeout(() => {
+                    document.getElementById('penalty-content').textContent = penalty;
+                    document.getElementById('penalty-selection').classList.add('hidden');
+                    document.getElementById('penalty-result').classList.remove('hidden');
+                    
+                    // 花火エフェクト
+                    createFireworks();
+                }, 1000);
+            }, 800);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ハードコア - 3時間エンドラ討伐</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 0;
+            background: linear-gradient(135deg, #2c003e 0%, #5a0080 100%);
+            margin-bottom: 40px;
+            border-radius: 10px;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .subtitle {
+            font-size: 1.5em;
+            color: #b19cd9;
+        }
+
+        .section {
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        h2 {
+            color: #b19cd9;
+            margin-bottom: 20px;
+            font-size: 2em;
+            border-bottom: 2px solid #5a0080;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            color: #9370db;
+            margin: 20px 0 10px 0;
+            font-size: 1.5em;
+        }
+
+        h4 {
+            color: #b19cd9;
+            margin: 15px 0 10px 0;
+            font-size: 1.2em;
+        }
+
+        ul {
+            padding-left: 40px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .rules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .rule-card {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            transition: transform 0.2s;
+        }
+
+        .rule-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(147, 112, 219, 0.3);
+        }
+
+        .rule-card h4 {
+            color: #b19cd9;
+            margin-bottom: 10px;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 30px;
+            align-items: center;
+        }
+
+        .timeline-time {
+            background-color: #5a0080;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            min-width: 100px;
+            text-align: center;
+            margin-right: 20px;
+        }
+
+        .timeline-content {
+            flex: 1;
+            background-color: #333;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .rewards-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .rewards-table th,
+        .rewards-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+
+        .rewards-table th {
+            background-color: #5a0080;
+            color: white;
+        }
+
+        .rewards-table tr:hover {
+            background-color: #333;
+        }
+
+        .rewards-table .category-separator {
+            border-bottom: 3px solid #444;
+            padding-bottom: 15px;
+        }
+
+        .rewards-table .category-separator + tr td {
+            padding-top: 15px;
+        }
+
+        .highlight {
+            background-color: #5a0080;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .command-box {
+            background-color: #1a1a1a;
+            border: 1px solid #444;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+        }
+
+        .warning {
+            background-color: #8b0000;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 2px solid #ff0000;
+        }
+
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .achievement-item {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #5a0080;
+        }
+
+        .achievement-xp {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        /* アニメーション */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(147, 112, 219, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(147, 112, 219, 0.8), 0 0 30px rgba(147, 112, 219, 0.6);
+            }
+        }
+
+        .section {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .rule-card {
+            transition: all 0.3s ease;
+        }
+
+        .rule-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(147, 112, 219, 0.4);
+            animation: glow 2s infinite;
+        }
+
+        .highlight {
+            animation: pulse 2s infinite;
+        }
+
+        .achievement-item {
+            transition: all 0.3s ease;
+        }
+
+        .achievement-item:hover {
+            transform: translateX(10px);
+            border-left-color: #ffd700;
+            background-color: #3a3a3a;
+        }
+
+        .timeline-item {
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .timeline-item:nth-child(1) { animation-delay: 0.1s; }
+        .timeline-item:nth-child(2) { animation-delay: 0.2s; }
+        .timeline-item:nth-child(3) { animation-delay: 0.3s; }
+        .timeline-item:nth-child(4) { animation-delay: 0.4s; }
+
+        .command-box {
+            transition: all 0.3s ease;
+        }
+
+        .command-box:hover {
+            background-color: #2a2a2a;
+            transform: scale(1.02);
+        }
+
+        /* スクロール表示アニメーション */
+        .scroll-fade {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+
+        .scroll-fade.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ボタンスタイル */
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #5a0080;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background-color: #7a00b0;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(90, 0, 128, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+            .subtitle {
+                font-size: 1.2em;
+            }
+            .timeline-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .timeline-time {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔥 ハードコア 🔥</h1>
+            <p class="subtitle">3時間エンドラ討伐</p>
+        </header>
+
+        <!-- 基本ルール -->
+        <section class="section">
+            <h2>📋 基本ルール</h2>
+            <div class="rules-grid">
+                <div class="rule-card">
+                    <h4>🎮 ゲームモード</h4>
+                    <p>ハードコアモード（難易度ハード）</p>
+                    <p>誰かが死亡した時点でワールドを再生成</p>
+                </div>
+                <div class="rule-card">
+                    <h4>👥 参加人数</h4>
+                    <p>6〜7人での協力プレイ</p>
+                    <p>チーム分けなし（全員協力）</p>
+                    <p>PvPは無効化</p>
+                </div>
+                <div class="rule-card">
+                    <h4>⏰ 目標時間</h4>
+                    <p>3〜4時間以内にエンダードラゴン討伐</p>
+                    <p>実績とバトルパスで進行をサポート</p>
+                </div>
+                <div class="rule-card">
+                    <h4>💀 死亡ルール</h4>
+                    <p>誰かが死亡でワールド再生成</p>
+                    <p>エンド突入後は死亡してもワールド維持</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- タイムライン -->
+        <section class="section">
+            <h2>⏱️ 推奨タイムライン</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-time">0-30分</div>
+                    <div class="timeline-content">
+                        <strong>初期準備フェーズ</strong>
+                        <p>木材採取、石ツール作成、食料確保、初期拠点設営</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">30-90分</div>
+                    <div class="timeline-content">
+                        <strong>採掘フェーズ</strong>
+                        <p>鉄装備作成、ダイヤモンド探索、ネザーポータル準備</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">90-150分</div>
+                    <div class="timeline-content">
+                        <strong>ネザー攻略</strong>
+                        <p>ネザー要塞探索、ブレイズ討伐、ポーション醸造</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">150-240分</div>
+                    <div class="timeline-content">
+                        <strong>エンド突入</strong>
+                        <p>エンダーパール収集、要塞探索、ドラゴン討伐</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- バトルパスシステム -->
+        <section class="section">
+            <h2>🎁 バトルパス報酬システム</h2>
+            <p>実績達成でXPを獲得し、レベルアップで報酬を受け取れます。全員がプレミアム報酬にアクセス可能です。</p>
+            
+            <h3>主要報酬一覧</h3>
+            <table class="rewards-table">
+                <thead>
+                    <tr>
+                        <th>レベル</th>
+                        <th>必要XP</th>
+                        <th>フリー報酬</th>
+                        <th>プレミアム報酬</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>10</td>
+                        <td>石のピッケル</td>
+                        <td>鉄インゴット x3</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>60</td>
+                        <td>鉄の防具セット</td>
+                        <td>ダイヤモンド x3</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td>120</td>
+                        <td>金のブーツ</td>
+                        <td><span class="highlight">ネザー要塞座標検索権</span></td>
+                    </tr>
+                    <tr>
+                        <td>10</td>
+                        <td>220</td>
+                        <td>ダイヤの胸当て</td>
+                        <td><span class="highlight">要塞座標検索権</span></td>
+                    </tr>
+                    <tr>
+                        <td>13</td>
+                        <td>400</td>
+                        <td>水バケツ</td>
+                        <td><span class="highlight">古代都市座標検索権</span></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="warning">
+                ⚠️ 座標検索権は1回のみ使用可能！誰が使うか戦略的に決めましょう。
+            </div>
+        </section>
+
+        <!-- 座標報酬システム -->
+        <section class="section">
+            <h2>📍 座標報酬システム</h2>
+            <p>特定レベルで獲得できる座標検索権を使って、重要な構造物の位置を特定できます。</p>
+            
+            <h3>使用方法</h3>
+            <div class="command-box">
+                1. /battlepass でバトルパスメニューを開く<br>
+                2. 該当レベルの報酬アイコンをクリック<br>
+                3. 座標が自動的にチャットに表示される<br>
+                ※ 報酬クリック時に即座に実行されます
+            </div>
+
+            <div class="warning">
+                ⚠️ <strong>ディメンション制限について</strong><br>
+                • <strong>ネザー要塞</strong>：ネザーディメンションでのみ検索可能<br>
+                • <strong>要塞</strong>：オーバーワールドでのみ検索可能<br>
+                • <strong>古代都市</strong>：オーバーワールドでのみ検索可能<br>
+                <br>
+                報酬を受け取る前に適切なディメンションに移動してください！
+            </div>
+
+            <h3>戦略例</h3>
+            <ul>
+                <li>ネザー要塞検索はネザーポータル作成後に受け取る</li>
+                <li>要塞・古代都市検索はオーバーワールドで受け取る</li>
+                <li>誤ったディメンションで受け取ると無駄になるので注意</li>
+                <li>全員で誰が使うか事前に相談しておく</li>
+            </ul>
+        </section>
+
+        <!-- 実績システム -->
+        <section class="section">
+            <h2>🏆 実績とXP報酬</h2>
+            <p>各実績を達成すると自動的にバトルパスXPが付与されます。</p>
+            
+            <h3>序盤の重要実績</h3>
+            <div class="achievement-grid">
+                <div class="achievement-item">
+                    <strong>初回接続</strong><br>
+                    <span class="achievement-xp">+10 XP</span> - 即座に獲得
+                </div>
+                <div class="achievement-item">
+                    <strong>木を切る</strong><br>
+                    <span class="achievement-xp">+5 XP</span> - 最初の一歩
+                </div>
+                <div class="achievement-item">
+                    <strong>石を掘る</strong><br>
+                    <span class="achievement-xp">+10 XP</span> - 石器時代へ
+                </div>
+                <div class="achievement-item">
+                    <strong>鉄鉱石発見</strong><br>
+                    <span class="achievement-xp">+20 XP</span> - 鉄器時代の始まり
+                </div>
+            </div>
+
+            <h3>重要マイルストーン実績</h3>
+            <div class="achievement-grid">
+                <div class="achievement-item">
+                    <strong>ダイヤモンド発見</strong><br>
+                    <span class="achievement-xp">+40 XP</span>
+                </div>
+                <div class="achievement-item">
+                    <strong>ネザー突入</strong><br>
+                    <span class="achievement-xp">+50 XP</span>
+                </div>
+                <div class="achievement-item">
+                    <strong>ブレイズ討伐</strong><br>
+                    <span class="achievement-xp">+30 XP</span>
+                </div>
+                <div class="achievement-item">
+                    <strong>エンド到達</strong><br>
+                    <span class="achievement-xp">+80 XP</span>
+                </div>
+                <div class="achievement-item">
+                    <strong>ドラゴン討伐</strong><br>
+                    <span class="achievement-xp">+200 XP</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- コマンドリファレンス -->
+        <section class="section">
+            <h2>🎮 よく使うコマンド</h2>
+            
+            <h3>プレイヤー用</h3>
+            <div class="command-box">
+                /battlepass        # バトルパスメニューを開く<br>
+                /level            # 現在のレベルを確認<br>
+                /aach book        # 実績本を開く<br>
+                /aach stats       # 実績統計を表示
+            </div>
+
+            <h3>管理者用</h3>
+            <div class="command-box">
+                /battlepassadmin give xp [player] [amount]     # XP付与<br>
+                /battlepassadmin reset [player]                # バトルパスのリセット<br>
+                /battlepassadmin resetall                      # 全プレイヤーのバトルパスリセット<br>
+                /aa-bp-reward [achievement] [xp]               # 実績報酬設定<br>
+                /aa-bp-list                                    # 実績報酬一覧
+            </div>
+        </section>
+
+        <!-- Y0K0-Hardcoreルール -->
+        <section class="section">
+            <h2>🎯 Y0K0-Hardcoreルール</h2>
+            
+            <h3>死亡システム</h3>
+            <ul>
+                <li><strong>基本ルール：</strong> 誰かが死亡した時点でワールドを再生成</li>
+                <li><strong>エンド特例：</strong> エンド突入後は死亡してもワールド維持</li>
+                <li><strong>6回死亡ボーナス：</strong> 6回死亡で全員がエンド要塞近くにスポーン</li>
+                <li><strong>7回目終了：</strong> 7回目の死亡で企画終了</li>
+            </ul>
+
+            <h3>ポイントシステム</h3>
+            
+            <h4>死因別ポイント表</h4>
+            <table class="rewards-table">
+                <thead>
+                    <tr>
+                        <th>死因カテゴリ</th>
+                        <th>死因</th>
+                        <th>ポイント</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td rowspan="3"><strong>初歩的ミス</strong></td>
+                        <td>落下死</td>
+                        <td><span style="color: #ff4444;">100pt</span></td>
+                    </tr>
+                    <tr>
+                        <td>空腹死</td>
+                        <td><span style="color: #ff4444;">90pt</span></td>
+                    </tr>
+                    <tr class="category-separator">
+                        <td>窒息死</td>
+                        <td><span style="color: #ff6666;">80pt</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>油断系</strong></td>
+                        <td>溶岩/焼死</td>
+                        <td><span style="color: #ff8844;">70pt</span></td>
+                    </tr>
+                    <tr>
+                        <td rowspan="2"><strong>論外</strong></td>
+                        <td>クリーパー爆死</td>
+                        <td><span style="color: #ff0000;">150pt</span></td>
+                    </tr>
+                    <tr class="category-separator">
+                        <td>アイアンゴーレム</td>
+                        <td><span style="color: #ff0000;">150pt</span></td>
+                    </tr>
+                    <tr>
+                        <td rowspan="5"><strong>通常戦闘</strong></td>
+                        <td>オーバーワールドモブ</td>
+                        <td>30pt</td>
+                    </tr>
+                    <tr>
+                        <td>ネザーモブ（その他）</td>
+                        <td>40pt</td>
+                    </tr>
+                    <tr>
+                        <td>エンダーマン</td>
+                        <td>50pt</td>
+                    </tr>
+                    <tr>
+                        <td>ガスト</td>
+                        <td>50pt</td>
+                    </tr>
+                    <tr class="category-separator">
+                        <td>ホグリン</td>
+                        <td>45pt</td>
+                    </tr>
+                    <tr class="category-separator">
+                        <td><strong>その他</strong></td>
+                        <td>その他の死因</td>
+                        <td>40pt</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>罰ゲームシステム</h4>
+            <div class="warning">
+                ⚠️ <strong>総ポイント最多プレイヤーには罰ゲームが待っています！</strong><br>
+                死因によってポイントが加算され、最終的に最も多くのポイントを獲得したプレイヤーが罰ゲーム対象となります。<br>
+                罰ゲームの内容は企画終了時に発表されます。
+            </div>
+            
+            <h4>その他のルール</h4>
+            <ul>
+                <li>途中離脱可能（参加時点でポイント付与対象）</li>
+                <li>死因ポイントは累積され、最終集計で罰ゲーム対象者が決定</li>
+            </ul>
+        </section>
+
+        <!-- 注意事項 -->
+        <section class="section">
+            <h2>⚠️ 重要な注意事項</h2>
+            <ul>
+                <li><strong>ハードコアモード：</strong> 誰かが死亡するとワールド再生成（エンド到達前）</li>
+                <li><strong>座標報酬：</strong> 使い切りなので、使用タイミングは慎重に</li>
+                <li><strong>戦略：</strong> 役割分担を明確にして効率的に進めましょう</li>
+                <li><strong>時間管理：</strong> 各フェーズの時間配分を意識して行動</li>
+                <li><strong>リソース共有：</strong> チェストを活用して資源を共有</li>
+            </ul>
+        </section>
+
+        <!-- フッター -->
+        <footer style="text-align: center; padding: 40px 0; color: #666;">
+            <p>Minecraft Hardcore Event - Y0K0-Hardcore更新版</p>
+            <p><a href="admin-login.html" style="color: #666; text-decoration: none;">原作:</a> <a href="https://takatodayo.github.io/Y0K0-Hardcore/" style="color: #b19cd9;">Y0K0-Hardcore</a></p>
+            <p>Powered by AdvancedAchievements & RevampBattlePass</p>
+        </footer>
+    </div>
+    <script>
+        // スクロールアニメーション
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('show');
+                }
+            });
+        }, observerOptions);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // スクロールアニメーション対象要素
+            const fadeElements = document.querySelectorAll('.section, .rule-card, .achievement-item');
+            fadeElements.forEach(el => {
+                el.classList.add('scroll-fade');
+                observer.observe(el);
+            });
+
+            // コマンドボックスクリック時のコピー機能
+            const commandBoxes = document.querySelectorAll('.command-box');
+            commandBoxes.forEach(box => {
+                box.style.cursor = 'pointer';
+                box.title = 'クリックしてコピー';
+                
+                box.addEventListener('click', function() {
+                    const text = this.innerText;
+                    navigator.clipboard.writeText(text).then(() => {
+                        const originalBg = this.style.backgroundColor;
+                        this.style.backgroundColor = '#4a0080';
+                        this.style.transform = 'scale(0.98)';
+                        
+                        setTimeout(() => {
+                            this.style.backgroundColor = originalBg;
+                            this.style.transform = '';
+                        }, 200);
+                        
+                        // コピー通知
+                        const notification = document.createElement('div');
+                        notification.textContent = 'コピーしました！';
+                        notification.style.cssText = `
+                            position: fixed;
+                            top: 20px;
+                            right: 20px;
+                            background: #5a0080;
+                            color: white;
+                            padding: 10px 20px;
+                            border-radius: 5px;
+                            z-index: 1000;
+                            animation: fadeInUp 0.3s ease;
+                        `;
+                        document.body.appendChild(notification);
+                        
+                        setTimeout(() => {
+                            notification.style.animation = 'fadeInUp 0.3s ease reverse';
+                            setTimeout(() => notification.remove(), 300);
+                        }, 2000);
+                    });
+                });
+            });
+
+            // テーブル行のホバーエフェクト
+            const tableRows = document.querySelectorAll('.rewards-table tr');
+            tableRows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateX(5px)';
+                });
+                row.addEventListener('mouseleave', function() {
+                    this.style.transform = '';
+                });
+            });
+
+            // パーティクル背景エフェクト（軽量版）
+            const header = document.querySelector('header');
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.style.cssText = `
+                    position: absolute;
+                    width: 4px;
+                    height: 4px;
+                    background: rgba(255, 255, 255, 0.3);
+                    border-radius: 50%;
+                    top: ${Math.random() * 100}%;
+                    left: ${Math.random() * 100}%;
+                    animation: float ${5 + Math.random() * 10}s linear infinite;
+                `;
+                header.appendChild(particle);
+            }
+
+            // 浮遊アニメーション用CSS追加
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes float {
+                    0% { transform: translateY(0) translateX(0); opacity: 0; }
+                    10% { opacity: 1; }
+                    90% { opacity: 1; }
+                    100% { transform: translateY(-100vh) translateX(${Math.random() * 200 - 100}px); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>
