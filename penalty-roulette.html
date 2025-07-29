@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>途中離脱ペナルティルーレット - ハードコア</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #2a0a2a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px 0;
+            background-attachment: fixed;
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #ff6666;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(255, 102, 102, 0.5);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .roulette-container {
+            position: relative;
+            width: 500px;
+            height: 500px;
+            margin: 0 auto 40px;
+        }
+
+        .roulette-wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 0 15px #333, 0 0 50px rgba(0, 0, 0, 0.5);
+            transition: transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+            background: #fff;
+        }
+
+        .wheel-svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-top: 50px solid #ff0000;
+            z-index: 10;
+            filter: drop-shadow(0 0 15px rgba(255, 0, 0, 0.8));
+        }
+        
+        .pointer::after {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: -20px;
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid #cc0000;
+        }
+
+        .spin-button {
+            padding: 15px 60px;
+            font-size: 1.5em;
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(255, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .spin-button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 0, 0, 0.5);
+        }
+
+        .spin-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result-display {
+            display: none;
+            background: rgba(0, 0, 0, 0.8);
+            border: 3px solid #ff0000;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px auto;
+            animation: fadeIn 1s ease;
+            max-width: 600px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-text {
+            font-size: 2em;
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+
+        .penalty-description {
+            font-size: 1.3em;
+            line-height: 1.6;
+            color: #ff6666;
+        }
+
+        .player-input {
+            margin-bottom: 30px;
+        }
+
+        .player-input input {
+            padding: 12px 20px;
+            font-size: 1.2em;
+            background: rgba(42, 42, 42, 0.8);
+            border: 2px solid #5a0080;
+            border-radius: 10px;
+            color: #e0e0e0;
+            width: 300px;
+            text-align: center;
+        }
+
+        .player-input input:focus {
+            outline: none;
+            border-color: #b19cd9;
+            box-shadow: 0 0 15px rgba(147, 112, 219, 0.3);
+        }
+
+        .warning-text {
+            color: #ff9999;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        /* 花火エフェクト */
+        .firework {
+            position: absolute;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            animation: explode 1s ease-out forwards;
+        }
+
+        @keyframes explode {
+            0% { 
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% { 
+                transform: translate(var(--x), var(--y)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .back-link {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            color: #999;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #b19cd9;
+        }
+
+        @media (max-width: 600px) {
+            .roulette-container {
+                width: 350px;
+                height: 350px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚠️ 途中離脱ペナルティルーレット ⚠️</h1>
+        
+        <div class="warning-text">
+            途中離脱する場合、以下のペナルティルーレットを回す必要があります。<br>
+            出た結果のポイントが死因ポイントに加算されます。
+        </div>
+        
+        <div class="player-input">
+            <input type="text" id="playerName" placeholder="離脱するプレイヤー名を入力" />
+        </div>
+        
+        <button class="spin-button" onclick="spinRoulette()">ルーレットを回す</button>
+        
+        <div class="roulette-container">
+            <div class="pointer"></div>
+            <div class="roulette-wheel" id="wheel">
+                <!-- ルーレットのセクションが動的に生成される -->
+            </div>
+        </div>
+        
+        <div class="result-display" id="result">
+            <div class="result-text" id="resultText"></div>
+            <div class="penalty-description" id="penaltyDescription"></div>
+        </div>
+        
+        <a href="admin-dashboard.html" class="back-link">← ダッシュボードに戻る</a>
+    </div>
+    
+    <script src="js/database.js"></script>
+    <script>
+        // ペナルティ項目
+        const penalties = [
+            { text: "+0pt", points: 0, color: "#44ff44", description: "セーフ！ペナルティなし" },
+            { text: "+20pt", points: 20, color: "#ffff44", description: "軽いペナルティ: 20ポイント加算" },
+            { text: "+30pt", points: 30, color: "#ffaa44", description: "中程度のペナルティ: 30ポイント加算" },
+            { text: "+50pt", points: 50, color: "#ff6644", description: "重いペナルティ: 50ポイント加算" },
+            { text: "+100pt", points: 100, color: "#ff0000", description: "最大ペナルティ！100ポイント加算" },
+            { text: "+10pt", points: 10, color: "#88ff88", description: "最小ペナルティ: 10ポイント加算" },
+            { text: "+40pt", points: 40, color: "#ff8844", description: "中程度のペナルティ: 40ポイント加算" },
+            { text: "+75pt", points: 75, color: "#ff4444", description: "かなり重いペナルティ: 75ポイント加算" }
+        ];
+        
+        let isSpinning = false;
+        
+        // ルーレット初期化
+        function initRoulette() {
+            const wheel = document.getElementById('wheel');
+            wheel.innerHTML = '';
+            
+            // SVGを作成
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('class', 'wheel-svg');
+            svg.setAttribute('viewBox', '0 0 500 500');
+            
+            const centerX = 250;
+            const centerY = 250;
+            const radius = 240;
+            const sectionAngle = 360 / penalties.length;
+            
+            penalties.forEach((penalty, index) => {
+                const startAngle = index * sectionAngle - 90;
+                const endAngle = (index + 1) * sectionAngle - 90;
+                
+                // 度をラジアンに変換
+                const startRad = startAngle * Math.PI / 180;
+                const endRad = endAngle * Math.PI / 180;
+                
+                // パスの座標を計算
+                const x1 = centerX + radius * Math.cos(startRad);
+                const y1 = centerY + radius * Math.sin(startRad);
+                const x2 = centerX + radius * Math.cos(endRad);
+                const y2 = centerY + radius * Math.sin(endRad);
+                
+                // セクターのパスを作成
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                const d = [
+                    `M ${centerX} ${centerY}`,
+                    `L ${x1} ${y1}`,
+                    `A ${radius} ${radius} 0 0 1 ${x2} ${y2}`,
+                    'Z'
+                ].join(' ');
+                
+                path.setAttribute('d', d);
+                path.setAttribute('fill', penalty.color);
+                path.setAttribute('stroke', '#fff');
+                path.setAttribute('stroke-width', '2');
+                
+                svg.appendChild(path);
+                
+                // テキストを追加
+                const textAngle = startAngle + sectionAngle / 2;
+                const textRad = textAngle * Math.PI / 180;
+                const textRadius = radius * 0.7;
+                const textX = centerX + textRadius * Math.cos(textRad);
+                const textY = centerY + textRadius * Math.sin(textRad);
+                
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', textX);
+                text.setAttribute('y', textY);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('dominant-baseline', 'middle');
+                text.setAttribute('fill', '#fff');
+                text.setAttribute('font-size', '24');
+                text.setAttribute('font-weight', 'bold');
+                text.setAttribute('transform', `rotate(${textAngle + 90}, ${textX}, ${textY})`);
+                text.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+                text.textContent = penalty.text;
+                
+                svg.appendChild(text);
+            });
+            
+            // 中心の円
+            const centerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            centerCircle.setAttribute('cx', centerX);
+            centerCircle.setAttribute('cy', centerY);
+            centerCircle.setAttribute('r', '50');
+            centerCircle.setAttribute('fill', '#2a2a2a');
+            centerCircle.setAttribute('stroke', '#fff');
+            centerCircle.setAttribute('stroke-width', '4');
+            
+            svg.appendChild(centerCircle);
+            
+            // 中心のテキスト
+            const centerText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            centerText.setAttribute('x', centerX);
+            centerText.setAttribute('y', centerY);
+            centerText.setAttribute('text-anchor', 'middle');
+            centerText.setAttribute('dominant-baseline', 'middle');
+            centerText.setAttribute('fill', '#fff');
+            centerText.setAttribute('font-size', '16');
+            centerText.setAttribute('font-weight', 'bold');
+            centerText.textContent = 'SPIN';
+            
+            svg.appendChild(centerText);
+            
+            wheel.appendChild(svg);
+        }
+        
+        function spinRoulette() {
+            if (isSpinning) return;
+            
+            const playerName = document.getElementById('playerName').value.trim();
+            if (!playerName) {
+                alert('プレイヤー名を入力してください');
+                return;
+            }
+            
+            isSpinning = true;
+            const button = document.querySelector('.spin-button');
+            button.disabled = true;
+            
+            const wheel = document.getElementById('wheel');
+            const result = document.getElementById('result');
+            result.style.display = 'none';
+            
+            // ランダムな回転数と最終位置
+            const spins = 5 + Math.floor(Math.random() * 5);
+            const finalAngle = Math.random() * 360;
+            const totalRotation = spins * 360 + finalAngle;
+            
+            // 回転アニメーション
+            wheel.style.transform = `rotate(${totalRotation}deg)`;
+            
+            // 結果を計算
+            setTimeout(() => {
+                // 最終角度を正規化（0-360の範囲に）
+                const normalizedAngle = ((360 - (totalRotation % 360)) + 360) % 360;
+                const sectionAngle = 360 / penalties.length;
+                // ポインターが上にあるので、その位置のセクションを計算
+                const adjustedAngle = (normalizedAngle + (sectionAngle / 2)) % 360;
+                const selectedIndex = Math.floor(adjustedAngle / sectionAngle) % penalties.length;
+                const selectedPenalty = penalties[selectedIndex];
+                
+                // 結果表示
+                showResult(playerName, selectedPenalty);
+                
+                // 花火エフェクト
+                if (selectedPenalty.points === 0) {
+                    createFireworks();
+                }
+                
+                isSpinning = false;
+                button.disabled = false;
+            }, 4000);
+        }
+        
+        function showResult(playerName, penalty) {
+            const result = document.getElementById('result');
+            const resultText = document.getElementById('resultText');
+            const penaltyDescription = document.getElementById('penaltyDescription');
+            
+            resultText.textContent = `${playerName}さん: ${penalty.text}`;
+            penaltyDescription.innerHTML = penalty.description + '<br><br>' +
+                (penalty.points > 0 ? 
+                    `死因ポイントに${penalty.points}ポイントが加算されます。<br>罰ゲーム判定時に考慮されます。` :
+                    '今回はペナルティなし！お疲れ様でした。');
+            
+            result.style.display = 'block';
+            
+            // 結果が表示されたらスクロール
+            setTimeout(() => {
+                result.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+            
+            // ローカルストレージに記録
+            savePenaltyResult(playerName, penalty.points);
+        }
+        
+        async function savePenaltyResult(playerName, points) {
+            try {
+                // データベースに保存
+                await hardcoreDB.addPenaltyRoulette(playerName, points);
+                await hardcoreDB.addPenaltyPoints(playerName, points);
+                
+                // 旧システムとの互換性のためlocalStorageにも保存
+                const history = JSON.parse(localStorage.getItem('penaltyHistory') || '[]');
+                history.push({
+                    player: playerName,
+                    points: points,
+                    timestamp: new Date().toISOString()
+                });
+                localStorage.setItem('penaltyHistory', JSON.stringify(history));
+            } catch (error) {
+                console.error('Failed to save penalty result:', error);
+            }
+        }
+        
+        function createFireworks() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const firework = document.createElement('div');
+                    firework.className = 'firework';
+                    firework.style.left = '50%';
+                    firework.style.top = '50%';
+                    
+                    const angle = (Math.PI * 2 * i) / 50;
+                    const velocity = 100 + Math.random() * 200;
+                    firework.style.setProperty('--x', Math.cos(angle) * velocity + 'px');
+                    firework.style.setProperty('--y', Math.sin(angle) * velocity + 'px');
+                    firework.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    document.querySelector('.roulette-container').appendChild(firework);
+                    setTimeout(() => firework.remove(), 1000);
+                }, i * 20);
+            }
+        }
+        
+        // 初期化
+        async function init() {
+            try {
+                await hardcoreDB.init();
+                console.log('Database initialized');
+            } catch (error) {
+                console.error('Failed to initialize database:', error);
+            }
+            initRoulette();
+        }
+        
+        init();
+    </script>
+</body>
+</html>

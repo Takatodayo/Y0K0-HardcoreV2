@@ -437,21 +437,27 @@
             // シール選択を表示
             createPenaltySeals();
             
-            // 死因統計を表示
-            const statsBody = document.getElementById('death-stats');
-            statsBody.innerHTML = '';
-            penaltyData.deaths.forEach(death => {
-                if (death.count > 0) {
-                    const row = document.createElement('tr');
-                    row.className = death.points >= 100 ? 'highlight-row' : '';
-                    row.innerHTML = `
-                        <td>${death.cause}</td>
-                        <td>${death.count}回</td>
-                        <td>${death.points}pt</td>
-                    `;
-                    statsBody.appendChild(row);
-                }
-            });
+            // 死因統計を表示（データがある場合のみ）
+            const statsTable = document.querySelector('.stats-table');
+            if (penaltyData.deaths && penaltyData.deaths.length > 0) {
+                const statsBody = document.getElementById('death-stats');
+                statsBody.innerHTML = '';
+                penaltyData.deaths.forEach(death => {
+                    if (death.count > 0) {
+                        const row = document.createElement('tr');
+                        row.className = death.points >= 100 ? 'highlight-row' : '';
+                        row.innerHTML = `
+                            <td>${death.cause}</td>
+                            <td>${death.count}回</td>
+                            <td>${death.points}pt</td>
+                        `;
+                        statsBody.appendChild(row);
+                    }
+                });
+            } else {
+                // 死因詳細がない場合はテーブルを非表示
+                statsTable.style.display = 'none';
+            }
             
             // 内容を表示
             reveal.classList.remove('hidden');

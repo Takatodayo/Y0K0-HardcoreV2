@@ -232,9 +232,9 @@
                     sessionStorage.setItem('adminAuthenticated', 'true');
                     sessionStorage.setItem('authTime', Date.now());
                     
-                    // penalty-inputページへリダイレクト
+                    // 管理者ダッシュボードへリダイレクト
                     setTimeout(() => {
-                        window.location.href = 'penalty-input.html';
+                        window.location.href = 'admin-dashboard.html';
                     }, 1000);
                 } else {
                     // エラー表示

@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理者ダッシュボード - ハードコア</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c003e 0%, #5a0080 100%);
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .admin-info {
+            text-align: right;
+            margin-bottom: 20px;
+            color: #b19cd9;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .dashboard-card {
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            border: 2px solid #444;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(90, 0, 128, 0.3);
+            border-color: #5a0080;
+        }
+
+        .card-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: block;
+            text-align: center;
+        }
+
+        .card-title {
+            font-size: 1.5em;
+            color: #b19cd9;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .card-description {
+            margin-bottom: 20px;
+            color: #ccc;
+            text-align: center;
+        }
+
+        .card-button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #5a0080 0%, #7a00b0 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .card-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(90, 0, 128, 0.4);
+        }
+
+        .danger-button {
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+        }
+
+        .danger-button:hover {
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+        }
+
+        .history-section {
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .history-title {
+            color: #b19cd9;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+
+        .history-table th {
+            background-color: #5a0080;
+            color: white;
+        }
+
+        .history-table tr:hover {
+            background-color: #333;
+        }
+
+        .logout-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #666;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background-color: #888;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 20px;
+            color: #666;
+        }
+
+        /* アラートボックス */
+        .alert {
+            background-color: #4a0000;
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .alert-title {
+            color: #ff6666;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <script>
+        // 認証チェック
+        const isAuthenticated = sessionStorage.getItem('adminAuthenticated');
+        const authTime = sessionStorage.getItem('authTime');
+        
+        if (!isAuthenticated || !authTime || (Date.now() - parseInt(authTime) > 3600000)) {
+            window.location.href = 'admin-login.html';
+        }
+    </script>
+    
+    <div class="container">
+        <div class="admin-info">
+            管理者モード | セッション有効期限: <span id="sessionTimer"></span>
+        </div>
+        
+        <a href="#" class="logout-button" onclick="logout()">ログアウト</a>
+        
+        <header>
+            <h1>🔧 管理者ダッシュボード 🔧</h1>
+            <p style="margin-top: 10px; color: #b19cd9;">ハードコア企画管理システム</p>
+        </header>
+        
+        <div class="alert">
+            <div class="alert-title">⚠️ 重要な注意事項 ⚠️</div>
+            <p>このページは管理者専用です。参加者には絶対に見せないでください。</p>
+        </div>
+        
+        <div class="dashboard-grid">
+            <!-- ポイント計算 -->
+            <div class="dashboard-card">
+                <span class="card-icon">🧮</span>
+                <h2 class="card-title">ポイント計算</h2>
+                <p class="card-description">
+                    死因カウントを入力してポイントを計算・保存します。
+                    新旧両バージョンに対応。
+                </p>
+                <a href="point-calculator.html" class="card-button">計算画面を開く</a>
+            </div>
+            
+            <!-- 罰ゲーム入力 -->
+            <div class="dashboard-card">
+                <span class="card-icon">📝</span>
+                <h2 class="card-title">罰ゲーム設定</h2>
+                <p class="card-description">
+                    罰ゲーム対象者と罰ゲーム内容を設定します。
+                    データベースから自動選択可能。
+                </p>
+                <a href="penalty-input.html" class="card-button">設定画面を開く</a>
+            </div>
+            
+            <!-- 途中離脱ルーレット -->
+            <div class="dashboard-card">
+                <span class="card-icon">🎰</span>
+                <h2 class="card-title">離脱ペナルティルーレット</h2>
+                <p class="card-description">
+                    途中離脱者用のペナルティルーレット。
+                    0〜100ポイントがランダムに加算されます。
+                </p>
+                <a href="penalty-roulette.html" class="card-button danger-button">ルーレットを開く</a>
+            </div>
+            
+            <!-- 企画ルール確認 -->
+            <div class="dashboard-card">
+                <span class="card-icon">📖</span>
+                <h2 class="card-title">企画ルール確認</h2>
+                <p class="card-description">
+                    参加者向けのルール説明ページを確認できます。
+                    事前チェック用。
+                </p>
+                <a href="index.html" class="card-button">ルールページへ</a>
+            </div>
+        </div>
+        
+        <!-- 離脱履歴 -->
+        <div class="history-section">
+            <h2 class="history-title">📊 離脱ペナルティ履歴</h2>
+            <table class="history-table" id="penaltyHistory">
+                <thead>
+                    <tr>
+                        <th>時刻</th>
+                        <th>プレイヤー名</th>
+                        <th>ペナルティポイント</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody">
+                    <!-- 履歴が動的に追加される -->
+                </tbody>
+            </table>
+            <p style="margin-top: 20px; text-align: center;">
+                <button onclick="clearHistory()" style="padding: 10px 20px; background-color: #ff0000; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    履歴をクリア
+                </button>
+                <button onclick="exportData()" style="padding: 10px 20px; background-color: #5a0080; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">
+                    データエクスポート
+                </button>
+            </p>
+        </div>
+        
+        <!-- プレイヤー統計 -->
+        <div class="history-section">
+            <h2 class="history-title">📈 プレイヤー統計</h2>
+            <table class="history-table" id="playerStats">
+                <thead>
+                    <tr>
+                        <th>プレイヤー名</th>
+                        <th>総死亡数</th>
+                        <th>死因ポイント</th>
+                        <th>離脱ペナルティ</th>
+                        <th>総ポイント</th>
+                    </tr>
+                </thead>
+                <tbody id="statsBody">
+                    <!-- 統計が動的に追加される -->
+                </tbody>
+            </table>
+            <p style="margin-top: 20px; text-align: center;">
+                <button onclick="clearPlayerStats()" style="padding: 10px 20px; background-color: #ff0000; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    プレイヤー統計をリセット
+                </button>
+                <button onclick="clearSpecificPlayer()" style="padding: 10px 20px; background-color: #ff6600; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">
+                    特定プレイヤーをリセット
+                </button>
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>Hardcore Admin System v1.0</p>
+            <p style="margin-top: 10px;">
+                <a href="index.html" style="color: #666; text-decoration: none;">トップページ</a>
+            </p>
+        </div>
+    </div>
+    
+    <script src="js/database.js"></script>
+    <script>
+        // セッションタイマー更新
+        function updateSessionTimer() {
+            const authTime = parseInt(sessionStorage.getItem('authTime'));
+            const remaining = 3600000 - (Date.now() - authTime);
+            
+            if (remaining <= 0) {
+                logout();
+                return;
+            }
+            
+            const minutes = Math.floor(remaining / 60000);
+            const seconds = Math.floor((remaining % 60000) / 1000);
+            document.getElementById('sessionTimer').textContent = `${minutes}分${seconds}秒`;
+        }
+        
+        // ログアウト
+        function logout() {
+            sessionStorage.removeItem('adminAuthenticated');
+            sessionStorage.removeItem('authTime');
+            window.location.href = 'admin-login.html';
+        }
+        
+        // 離脱履歴を表示
+        async function loadHistory() {
+            try {
+                const history = await hardcoreDB.getPenaltyHistory();
+                const tbody = document.getElementById('historyBody');
+                
+                tbody.innerHTML = '';
+                
+                if (history.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #666;">履歴がありません</td></tr>';
+                    return;
+                }
+                
+                // 新しい順にソート
+                history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                history.forEach(item => {
+                    const row = document.createElement('tr');
+                    const date = new Date(item.timestamp);
+                    row.innerHTML = `
+                        <td>${date.toLocaleString('ja-JP')}</td>
+                        <td>${item.playerName}</td>
+                        <td style="color: ${item.points === 0 ? '#44ff44' : '#ff6666'};">${item.points}pt</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Failed to load history:', error);
+                // フォールバック: localStorageから読み込み
+                const history = JSON.parse(localStorage.getItem('penaltyHistory') || '[]');
+                const tbody = document.getElementById('historyBody');
+                
+                tbody.innerHTML = '';
+                
+                if (history.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: #666;">履歴がありません</td></tr>';
+                    return;
+                }
+                
+                history.reverse().forEach(item => {
+                    const row = document.createElement('tr');
+                    const date = new Date(item.timestamp);
+                    row.innerHTML = `
+                        <td>${date.toLocaleString('ja-JP')}</td>
+                        <td>${item.player}</td>
+                        <td style="color: ${item.points === 0 ? '#44ff44' : '#ff6666'};">${item.points}pt</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+        
+        // 履歴クリア
+        async function clearHistory() {
+            if (confirm('本当に履歴をクリアしますか？')) {
+                try {
+                    await hardcoreDB.clearAllData();
+                    console.log('Database cleared');
+                } catch (error) {
+                    console.error('Failed to clear database:', error);
+                }
+                localStorage.removeItem('penaltyHistory');
+                loadHistory();
+                loadPlayerStats();
+            }
+        }
+        
+        // プレイヤー統計をリセット
+        async function clearPlayerStats() {
+            if (confirm('本当に全プレイヤーの統計をリセットしますか？\n※死因記録や履歴は保持されます')) {
+                try {
+                    await hardcoreDB.clearPlayerStats();
+                    alert('プレイヤー統計をリセットしました');
+                    loadPlayerStats();
+                } catch (error) {
+                    console.error('Failed to clear player stats:', error);
+                    alert('リセットに失敗しました');
+                }
+            }
+        }
+        
+        // 特定プレイヤーをリセット
+        async function clearSpecificPlayer() {
+            const playerName = prompt('リセットするプレイヤー名を入力してください:');
+            if (!playerName) return;
+            
+            if (confirm(`${playerName}さんの統計をリセットしますか？`)) {
+                try {
+                    await hardcoreDB.clearPlayerStat(playerName);
+                    alert(`${playerName}さんの統計をリセットしました`);
+                    loadPlayerStats();
+                } catch (error) {
+                    console.error('Failed to clear specific player:', error);
+                    alert('リセットに失敗しました');
+                }
+            }
+        }
+        
+        // プレイヤー統計を表示
+        async function loadPlayerStats() {
+            try {
+                const stats = await hardcoreDB.getAllPlayerStats();
+                const tbody = document.getElementById('statsBody');
+                
+                tbody.innerHTML = '';
+                
+                if (stats.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #666;">統計データがありません</td></tr>';
+                    return;
+                }
+                
+                // 総ポイント順にソート
+                stats.sort((a, b) => b.totalPoints - a.totalPoints);
+                
+                stats.forEach(player => {
+                    const row = document.createElement('tr');
+                    const deathPoints = player.totalPoints - (player.penaltyPoints || 0);
+                    row.innerHTML = `
+                        <td>${player.playerName}</td>
+                        <td>${player.totalDeaths || 0}</td>
+                        <td>${deathPoints}pt</td>
+                        <td>${player.penaltyPoints || 0}pt</td>
+                        <td style="color: #ffd700; font-weight: bold;">${player.totalPoints}pt</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Failed to load player stats:', error);
+            }
+        }
+        
+        // データエクスポート
+        async function exportData() {
+            try {
+                const data = await hardcoreDB.exportData();
+                const jsonStr = JSON.stringify(data, null, 2);
+                const blob = new Blob([jsonStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `hardcore_data_${new Date().toISOString().replace(/:/g, '-')}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                alert('データをエクスポートしました');
+            } catch (error) {
+                console.error('Failed to export data:', error);
+                alert('エクスポートに失敗しました');
+            }
+        }
+        
+        // 初期化
+        async function init() {
+            try {
+                await hardcoreDB.init();
+                console.log('Database initialized');
+            } catch (error) {
+                console.error('Failed to initialize database:', error);
+            }
+            setInterval(updateSessionTimer, 1000);
+            loadHistory();
+            loadPlayerStats();
+        }
+        
+        init();
+    </script>
+</body>
+</html>

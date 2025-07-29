@@ -202,214 +202,37 @@
     <div class="container">
         <h1>🎮 罰ゲーム対象者入力 🎮</h1>
         
-        <div class="version-selector" style="text-align: center; margin-bottom: 30px;">
-            <label style="font-size: 1.2em; margin-right: 20px;">
-                <input type="radio" name="version" value="new" checked onchange="switchVersion('new')">
-                新バージョン（現在）
-            </label>
-            <label style="font-size: 1.2em;">
-                <input type="radio" name="version" value="old" onchange="switchVersion('old')">
-                旧バージョン（Y0K0-Hardcore）
-            </label>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <a href="admin-dashboard.html" style="color: #b19cd9; text-decoration: none;">
+                ← ダッシュボードに戻る
+            </a>
+        </div>
+        
+        <!-- 最多ポイント者表示 -->
+        <div class="input-section" style="background-color: #4a0000; border: 2px solid #ff0000;">
+            <h2 style="color: #ff6666; margin-bottom: 15px;">🏆 現在の最多ポイント保持者</h2>
+            <div id="topPlayerInfo" style="text-align: center; font-size: 1.2em; color: #ffd700;">
+                データ読み込み中...
+            </div>
         </div>
         
         <div class="input-section">
             <div class="form-group">
-                <label for="playerName">プレイヤー名</label>
-                <input type="text" id="playerName" placeholder="罰ゲーム対象者の名前を入力">
+                <label for="playerName">罰ゲーム対象者</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="playerName" placeholder="プレイヤー名を入力" style="flex: 1;">
+                    <button type="button" onclick="loadPlayerStats()" style="padding: 10px 20px; background-color: #5a0080; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        DBから選択
+                    </button>
+                    <select id="playerSelect" onchange="selectPlayer()" style="padding: 10px; background-color: #1a1a1a; color: #e0e0e0; border: 2px solid #5a0080; border-radius: 5px;">
+                        <option value="">-- 選択 --</option>
+                    </select>
+                </div>
             </div>
             
             <div class="form-group">
-                <label>死因別カウント</label>
-                <div class="death-inputs" id="new-version">
-                    <div class="death-item">
-                        <div class="death-name">クリーパー爆死</div>
-                        <div class="death-count">
-                            <input type="number" id="creeper" min="0" value="0" data-points="150">
-                            <span>回 × 150pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <div class="death-item">
-                        <div class="death-name">アイアンゴーレム</div>
-                        <div class="death-count">
-                            <input type="number" id="golem" min="0" value="0" data-points="150">
-                            <span>回 × 150pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <div class="death-item">
-                        <div class="death-name">落下死</div>
-                        <div class="death-count">
-                            <input type="number" id="fall" min="0" value="0" data-points="100">
-                            <span>回 × 100pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <div class="death-item">
-                        <div class="death-name">空腹死</div>
-                        <div class="death-count">
-                            <input type="number" id="hunger" min="0" value="0" data-points="90">
-                            <span>回 × 90pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <div class="death-item">
-                        <div class="death-name">窒息死</div>
-                        <div class="death-count">
-                            <input type="number" id="suffocation" min="0" value="0" data-points="80">
-                            <span>回 × 80pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <div class="death-item">
-                        <div class="death-name">溶岩/焼死</div>
-                        <div class="death-count">
-                            <input type="number" id="lava" min="0" value="0" data-points="70">
-                            <span>回 × 70pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <div class="death-item">
-                        <div class="death-name">エンダーマン</div>
-                        <div class="death-count">
-                            <input type="number" id="enderman" min="0" value="0" data-points="50">
-                            <span>回 × 50pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <div class="death-item">
-                        <div class="death-name">ガスト</div>
-                        <div class="death-count">
-                            <input type="number" id="ghast" min="0" value="0" data-points="50">
-                            <span>回 × 50pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <div class="death-item">
-                        <div class="death-name">ホグリン</div>
-                        <div class="death-count">
-                            <input type="number" id="hoglin" min="0" value="0" data-points="45">
-                            <span>回 × 45pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <div class="death-item">
-                        <div class="death-name">ネザーモブ(その他)</div>
-                        <div class="death-count">
-                            <input type="number" id="nether" min="0" value="0" data-points="40">
-                            <span>回 × 40pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <div class="death-item">
-                        <div class="death-name">その他の死因</div>
-                        <div class="death-count">
-                            <input type="number" id="other" min="0" value="0" data-points="40">
-                            <span>回 × 40pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <div class="death-item">
-                        <div class="death-name">オーバーワールドモブ</div>
-                        <div class="death-count">
-                            <input type="number" id="overworld" min="0" value="0" data-points="30">
-                            <span>回 × 30pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 旧バージョン用の入力 -->
-                <div class="death-inputs" id="old-version" style="display: none;">
-                    <div class="death-item">
-                        <div class="death-name">落下死</div>
-                        <div class="death-count">
-                            <input type="number" id="old-fall" min="0" value="0" data-points="30">
-                            <span>回 × 30pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <div class="death-item">
-                        <div class="death-name">オーバーワールドモンスター（クリーパー以外）</div>
-                        <div class="death-count">
-                            <input type="number" id="old-overworld" min="0" value="0" data-points="30">
-                            <span>回 × 30pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <div class="death-item">
-                        <div class="death-name">クリーパー爆死</div>
-                        <div class="death-count">
-                            <input type="number" id="old-creeper" min="0" value="0" data-points="50">
-                            <span>回 × 50pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <div class="death-item">
-                        <div class="death-name">ネザーモンスター</div>
-                        <div class="death-count">
-                            <input type="number" id="old-nether" min="0" value="0" data-points="50">
-                            <span>回 × 50pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <div class="death-item">
-                        <div class="death-name">溶岩遊泳・焼死</div>
-                        <div class="death-count">
-                            <input type="number" id="old-lava" min="0" value="0" data-points="50">
-                            <span>回 × 50pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <div class="death-item">
-                        <div class="death-name">ゴーレム</div>
-                        <div class="death-count">
-                            <input type="number" id="old-golem" min="0" value="0" data-points="100">
-                            <span>回 × 100pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <div class="death-item">
-                        <div class="death-name">その他</div>
-                        <div class="death-count">
-                            <input type="number" id="old-other" min="0" value="0" data-points="40">
-                            <span>回 × 40pt = <span class="points-display">0</span>pt</span>
-                        </div>
-                    </div>
-                    
-                    <!-- チーム係数選択 -->
-                    <div class="death-item" style="grid-column: 1 / -1; background-color: #4a0000; padding: 20px;">
-                        <div style="margin-bottom: 15px; font-weight: bold; color: #ffd700;">チーム係数（旧バージョンのみ）</div>
-                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                            <label style="cursor: pointer;">
-                                <input type="radio" name="team-modifier" value="1" checked onchange="updateOldVersionPoints()">
-                                戦闘探索チーム（単独）: ×1.0
-                            </label>
-                            <label style="cursor: pointer;">
-                                <input type="radio" name="team-modifier" value="0.5" onchange="updateOldVersionPoints()">
-                                戦闘探索チーム（集団）: ×0.5
-                            </label>
-                            <label style="cursor: pointer;">
-                                <input type="radio" name="team-modifier" value="1.5" onchange="updateOldVersionPoints()">
-                                拠点防衛チーム: ×1.5
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="total-section">
-                <div>現在の入力: <span class="current-points">0</span> pt</div>
-                <button type="button" class="add-button" onclick="addToTotal()" style="margin-top: 15px; padding: 10px 30px; background-color: #5a0080; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer;">
-                    総ポイントに加算
-                </button>
-            </div>
-            
-            <div class="total-section" style="background-color: #5a0080; margin-top: 20px;">
-                <div style="font-size: 1.2em;">累計総ポイント: <span class="total-points">0</span> pt</div>
-                <div class="added-history" id="added-history" style="margin-top: 10px; font-size: 0.9em; color: #ccc;">
-                    <!-- 加算履歴がここに表示される -->
-                </div>
+                <label for="totalPoints">総ポイント</label>
+                <input type="number" id="totalPoints" min="0" value="0" style="background-color: #333; font-size: 1.2em; font-weight: bold; color: #ffd700;">
             </div>
         </div>
         
@@ -437,112 +260,22 @@
         <button class="submit-button" onclick="generatePenaltyPage()">罰ゲーム発表ページを生成</button>
         
         <p class="info-text">※ 入力後、罰ゲーム発表ページへ自動的に移動します</p>
+        <p class="info-text">死因の詳細入力は<a href="point-calculator.html" style="color: #b19cd9;">ポイント計算ページ</a>から行ってください</p>
     </div>
     
+    <script src="js/database.js"></script>
     <script>
-        // 現在のバージョン
-        let currentVersion = 'new';
-        // 累計ポイント
-        let accumulatedTotal = 0;
-        // 加算履歴
-        let addHistory = [];
-        
-        // 死因データの定義
-        const deathCauses = {
-            // 新バージョン
-            creeper: { name: "クリーパー爆死", points: 150 },
-            golem: { name: "アイアンゴーレム", points: 150 },
-            fall: { name: "落下死", points: 100 },
-            hunger: { name: "空腹死", points: 90 },
-            suffocation: { name: "窒息死", points: 80 },
-            lava: { name: "溶岩/焼死", points: 70 },
-            enderman: { name: "エンダーマン", points: 50 },
-            ghast: { name: "ガスト", points: 50 },
-            hoglin: { name: "ホグリン", points: 45 },
-            nether: { name: "ネザーモブ(その他)", points: 40 },
-            other: { name: "その他の死因", points: 40 },
-            overworld: { name: "オーバーワールドモブ", points: 30 }
-        };
-        
-        const oldDeathCauses = {
-            // 旧バージョン
-            'old-fall': { name: "落下死", points: 30 },
-            'old-overworld': { name: "オーバーワールドモンスター（クリーパー以外）", points: 30 },
-            'old-creeper': { name: "クリーパー爆死", points: 50 },
-            'old-nether': { name: "ネザーモンスター", points: 50 },
-            'old-lava': { name: "溶岩遊泳・焼死", points: 50 },
-            'old-golem': { name: "ゴーレム", points: 100 },
-            'old-other': { name: "その他", points: 40 }
-        };
-        
-        // バージョン切り替え
-        function switchVersion(version) {
-            currentVersion = version;
-            document.getElementById('new-version').style.display = version === 'new' ? 'grid' : 'none';
-            document.getElementById('old-version').style.display = version === 'old' ? 'grid' : 'none';
-            
-            // ポイントをリセット
-            document.querySelectorAll('input[type="number"]').forEach(input => input.value = 0);
-            updatePoints();
-        }
-        
-        // ポイント計算の更新
-        document.querySelectorAll('input[type="number"]').forEach(input => {
-            input.addEventListener('input', updatePoints);
-        });
-        
-        function updatePoints() {
-            if (currentVersion === 'new') {
-                updateNewVersionPoints();
-            } else {
-                updateOldVersionPoints();
-            }
-        }
-        
-        function updateNewVersionPoints() {
-            let totalPoints = 0;
-            
-            document.querySelectorAll('#new-version input[type="number"]').forEach(input => {
-                const count = parseInt(input.value) || 0;
-                const points = parseInt(input.dataset.points);
-                const subtotal = count * points;
-                
-                const display = input.parentElement.querySelector('.points-display');
-                display.textContent = subtotal;
-                
-                totalPoints += subtotal;
-            });
-            
-            document.querySelector('.current-points').textContent = totalPoints;
-        }
-        
-        function updateOldVersionPoints() {
-            const modifier = parseFloat(document.querySelector('input[name="team-modifier"]:checked').value);
-            let totalPoints = 0;
-            
-            document.querySelectorAll('#old-version input[type="number"]').forEach(input => {
-                const count = parseInt(input.value) || 0;
-                const basePoints = parseInt(input.dataset.points);
-                const baseSubtotal = count * basePoints;
-                const modifiedSubtotal = Math.floor(baseSubtotal * modifier);
-                
-                const display = input.parentElement.querySelector('.points-display');
-                if (modifier !== 1) {
-                    display.textContent = `${baseSubtotal} × ${modifier} = ${modifiedSubtotal}`;
-                } else {
-                    display.textContent = modifiedSubtotal;
-                }
-                
-                totalPoints += modifiedSubtotal;
-            });
-            
-            document.querySelector('.current-points').textContent = totalPoints;
-        }
-        
         function generatePenaltyPage() {
             const playerName = document.getElementById('playerName').value;
+            const totalPoints = parseInt(document.getElementById('totalPoints').value) || 0;
+            
             if (!playerName) {
                 alert('プレイヤー名を入力してください');
+                return;
+            }
+            
+            if (totalPoints === 0) {
+                alert('総ポイントを入力してください');
                 return;
             }
             
@@ -556,50 +289,12 @@
             if (penalties.length < 3) {
                 alert('罰ゲーム候補を3つ入力してください');
                 return;
-            }
-            
-            // 死因データを収集
-            const deaths = [];
-            let totalPoints = 0;
-            
-            if (currentVersion === 'new') {
-                // 新バージョンのデータ収集
-                Object.keys(deathCauses).forEach(key => {
-                    const count = parseInt(document.getElementById(key).value) || 0;
-                    if (count > 0) {
-                        const points = deathCauses[key].points * count;
-                        deaths.push({
-                            cause: deathCauses[key].name,
-                            count: count,
-                            points: points
-                        });
-                        totalPoints += points;
-                    }
-                });
-            } else {
-                // 旧バージョンのデータ収集
-                const modifier = parseFloat(document.querySelector('input[name="team-modifier"]:checked').value);
-                
-                Object.keys(oldDeathCauses).forEach(key => {
-                    const count = parseInt(document.getElementById(key).value) || 0;
-                    if (count > 0) {
-                        const basePoints = oldDeathCauses[key].points * count;
-                        const modifiedPoints = Math.floor(basePoints * modifier);
-                        deaths.push({
-                            cause: oldDeathCauses[key].name,
-                            count: count,
-                            points: modifiedPoints
-                        });
-                        totalPoints += modifiedPoints;
-                    }
-                });
             }
             
             // データをURLパラメータとして渡す
             const data = {
                 player: playerName,
                 total: totalPoints,
-                deaths: JSON.stringify(deaths),
                 penalties: JSON.stringify(penalties)
             };
             
@@ -607,103 +302,120 @@
             window.location.href = `penalty.html?${params.toString()}`;
         }
         
-        // 総ポイントに加算する関数
-        function addToTotal() {
-            const currentPoints = parseInt(document.querySelector('.current-points').textContent);
-            if (currentPoints === 0) {
-                alert('加算するポイントがありません');
-                return;
+        // プレイヤー統計を読み込んで最多ポイント者を表示
+        async function loadTopPlayer() {
+            try {
+                const stats = await hardcoreDB.getAllPlayerStats();
+                const topPlayerDiv = document.getElementById('topPlayerInfo');
+                
+                if (stats.length === 0) {
+                    topPlayerDiv.innerHTML = 'まだデータがありません';
+                    return;
+                }
+                
+                // 総ポイント順にソート
+                stats.sort((a, b) => b.totalPoints - a.totalPoints);
+                const topPlayer = stats[0];
+                
+                topPlayerDiv.innerHTML = `
+                    <div style="font-size: 1.5em; margin-bottom: 10px;">
+                        <span style="color: #fff;">${topPlayer.playerName}</span>
+                    </div>
+                    <div style="font-size: 1.3em;">
+                        総ポイント: <span style="color: #ff0000; font-weight: bold;">${topPlayer.totalPoints}pt</span>
+                    </div>
+                    <div style="font-size: 0.9em; margin-top: 5px; color: #ccc;">
+                        (死因: ${topPlayer.totalPoints - (topPlayer.penaltyPoints || 0)}pt / 離脱ペナルティ: ${topPlayer.penaltyPoints || 0}pt)
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Failed to load top player:', error);
+                document.getElementById('topPlayerInfo').innerHTML = 'データ読み込みエラー';
             }
-            
-            // 加算前の状態を記録
-            const modifier = currentVersion === 'old' ? 
-                parseFloat(document.querySelector('input[name="team-modifier"]:checked').value) : 1;
-            const modifierText = modifier !== 1 ? ` (×${modifier})` : '';
-            
-            accumulatedTotal += currentPoints;
-            document.querySelector('.total-points').textContent = accumulatedTotal;
-            
-            // 履歴に追加
-            const timestamp = new Date().toLocaleTimeString('ja-JP');
-            addHistory.push({
-                time: timestamp,
-                points: currentPoints,
-                modifier: modifierText
-            });
-            
-            // 履歴を表示
-            updateHistoryDisplay();
-            
-            // 入力をリセット
-            document.querySelectorAll('input[type="number"]').forEach(input => {
-                input.value = 0;
-            });
-            
-            // チーム係数をリセット（旧バージョンの場合）
-            if (currentVersion === 'old') {
-                document.querySelector('input[name="team-modifier"][value="1"]').checked = true;
-            }
-            
-            updatePoints();
-            
-            // 成功メッセージ
-            const addButton = document.querySelector('.add-button');
-            const originalText = addButton.textContent;
-            addButton.textContent = '✓ 加算しました';
-            addButton.style.backgroundColor = '#44ff44';
-            setTimeout(() => {
-                addButton.textContent = originalText;
-                addButton.style.backgroundColor = '#5a0080';
-            }, 1000);
         }
         
-        // 履歴表示を更新
-        function updateHistoryDisplay() {
-            const historyDiv = document.getElementById('added-history');
-            historyDiv.innerHTML = addHistory.map(h => 
-                `${h.time}: +${h.points}pt${h.modifier}`
-            ).join('<br>');
+        // プレイヤー一覧を読み込んでドロップダウンに表示
+        async function loadPlayerStats() {
+            try {
+                const stats = await hardcoreDB.getAllPlayerStats();
+                const playerSelect = document.getElementById('playerSelect');
+                
+                // ドロップダウンをリセット
+                playerSelect.innerHTML = '<option value="">-- 選択 --</option>';
+                
+                if (stats.length === 0) {
+                    alert('プレイヤーデータがありません');
+                    return;
+                }
+                
+                // 総ポイント順にソート
+                stats.sort((a, b) => b.totalPoints - a.totalPoints);
+                
+                // ドロップダウンに追加
+                stats.forEach((player, index) => {
+                    const option = document.createElement('option');
+                    option.value = player.playerName;
+                    option.textContent = `${player.playerName} (${player.totalPoints}pt)`;
+                    if (index === 0) {
+                        option.style.color = '#ffd700';
+                        option.textContent = '👑 ' + option.textContent;
+                    }
+                    playerSelect.appendChild(option);
+                });
+                
+                // ドロップダウンを表示
+                playerSelect.style.display = 'inline-block';
+                
+            } catch (error) {
+                console.error('Failed to load player stats:', error);
+                alert('プレイヤーデータの読み込みに失敗しました');
+            }
         }
         
-        // generatePenaltyPage関数を修正
-        const originalGeneratePenaltyPage = generatePenaltyPage;
-        generatePenaltyPage = function() {
-            // 累計ポイントを使用
-            const playerName = document.getElementById('playerName').value;
-            if (!playerName) {
-                alert('プレイヤー名を入力してください');
-                return;
+        // プレイヤーを選択した時の処理
+        async function selectPlayer() {
+            const playerSelect = document.getElementById('playerSelect');
+            const playerNameInput = document.getElementById('playerName');
+            const totalPointsInput = document.getElementById('totalPoints');
+            
+            if (playerSelect.value) {
+                playerNameInput.value = playerSelect.value;
+                
+                // 選択したプレイヤーの総ポイントを取得
+                try {
+                    const stats = await hardcoreDB.getAllPlayerStats();
+                    const selectedPlayer = stats.find(p => p.playerName === playerSelect.value);
+                    if (selectedPlayer) {
+                        totalPointsInput.value = selectedPlayer.totalPoints;
+                    }
+                } catch (error) {
+                    console.error('Failed to load player points:', error);
+                }
+                
+                // 選択後はドロップダウンを隠す
+                playerSelect.style.display = 'none';
+                playerSelect.value = '';
             }
-            
-            // 罰ゲーム候補を取得
-            const penalties = [
-                document.getElementById('penalty1').value,
-                document.getElementById('penalty2').value,
-                document.getElementById('penalty3').value
-            ].filter(p => p.trim() !== '');
-            
-            if (penalties.length < 3) {
-                alert('罰ゲーム候補を3つ入力してください');
-                return;
-            }
-            
-            // 死因データを履歴から再構築
-            const deathMap = new Map();
-            
-            // 履歴から死因を集計（簡易的な実装）
-            // 実際の実装では、各加算時の詳細を記録する必要があります
-            
-            // データをURLパラメータとして渡す
-            const data = {
-                player: playerName,
-                total: accumulatedTotal,
-                deaths: JSON.stringify([]),  // 簡易実装のため空配列
-                penalties: JSON.stringify(penalties)
-            };
-            
-            const params = new URLSearchParams(data);
-            window.location.href = `penalty.html?${params.toString()}`;
         }
+        
+        // データベース初期化
+        async function initDB() {
+            try {
+                await hardcoreDB.init();
+                console.log('Database initialized');
+                
+                // 初期化後に最多ポイント者を表示
+                await loadTopPlayer();
+                
+                // ドロップダウンを初期状態で非表示にする
+                document.getElementById('playerSelect').style.display = 'none';
+                
+            } catch (error) {
+                console.error('Failed to initialize database:', error);
+            }
+        }
+        
+        initDB();
     </script>
 </body>
 </html>
