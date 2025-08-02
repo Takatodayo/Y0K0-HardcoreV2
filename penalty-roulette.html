@@ -56,8 +56,20 @@
             position: relative;
             overflow: hidden;
             box-shadow: 0 0 0 15px #333, 0 0 50px rgba(0, 0, 0, 0.5);
-            transition: transform 4s cubic-bezier(0.17, 0.67, 0.83, 0.67);
             background: #fff;
+        }
+        
+        .roulette-wheel.spinning {
+            animation: wheelSpin var(--duration) cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+        
+        @keyframes wheelSpin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(var(--rotation));
+            }
         }
 
         .wheel-svg {
@@ -226,6 +238,9 @@
             出た結果のポイントが死因ポイントに加算されます。
         </div>
         
+        <!-- デバッグ表示エリア -->
+        <div id="debugInfo" style="display: none; background: rgba(0,0,0,0.9); color: #0f0; padding: 10px; margin: 10px; font-family: monospace; font-size: 12px; text-align: left; border: 1px solid #0f0;"></div>
+        
         <div class="player-input">
             <input type="text" id="playerName" placeholder="離脱するプレイヤー名を入力" />
         </div>
@@ -250,6 +265,9 @@
     <script src="js/database.js"></script>
     <script>
         // ペナルティ項目
+        // デバッグモード（開発時のみtrueに設定）
+        const DEBUG_MODE = false;
+        
         const penalties = [
             { text: "+0pt", points: 0, color: "#44ff44", description: "セーフ！ペナルティなし" },
             { text: "+20pt", points: 20, color: "#ffff44", description: "軽いペナルティ: 20ポイント加算" },
@@ -279,6 +297,7 @@
             const sectionAngle = 360 / penalties.length;
             
             penalties.forEach((penalty, index) => {
+                // 最初のセクションを真上（-90度）から開始
                 const startAngle = index * sectionAngle - 90;
                 const endAngle = (index + 1) * sectionAngle - 90;
                 
@@ -327,6 +346,20 @@
                 text.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
                 text.textContent = penalty.text;
                 
+                // デバッグモードの場合、インデックス番号も表示
+                if (DEBUG_MODE) {
+                    const debugText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    debugText.setAttribute('x', textX);
+                    debugText.setAttribute('y', textY + 20);
+                    debugText.setAttribute('text-anchor', 'middle');
+                    debugText.setAttribute('dominant-baseline', 'middle');
+                    debugText.setAttribute('fill', '#000');
+                    debugText.setAttribute('font-size', '12');
+                    debugText.setAttribute('transform', `rotate(${textAngle + 90}, ${textX}, ${textY + 20})`);
+                    debugText.textContent = `[${index}]`;
+                    svg.appendChild(debugText);
+                }
+                
                 svg.appendChild(text);
             });
             
@@ -374,23 +407,43 @@
             const result = document.getElementById('result');
             result.style.display = 'none';
             
+            // 前回の回転をリセット
+            wheel.classList.remove('spinning');
+            wheel.style.transform = 'rotate(0deg)';
+            
             // ランダムな回転数と最終位置
-            const spins = 5 + Math.floor(Math.random() * 5);
-            const finalAngle = Math.random() * 360;
+            const spins = 8 + Math.floor(Math.random() * 5); // 8-12回転
+            const randomIndex = Math.floor(Math.random() * penalties.length);
+            const sectionAngle = 360 / penalties.length;
+            
+            // 各セクションの中央に止まるように調整
+            // ポインターは上（0度）にあるので、選択したインデックスが上に来るように回転
+            const targetAngle = randomIndex * sectionAngle + (sectionAngle / 2);
+            const finalAngle = 360 - targetAngle; // 逆回転で補正
             const totalRotation = spins * 360 + finalAngle;
             
-            // 回転アニメーション
-            wheel.style.transform = `rotate(${totalRotation}deg)`;
+            // アニメーション時間を設定（回転が多いほど長く）
+            const duration = 4 + (spins * 0.2); // 4秒〜6.4秒
             
-            // 結果を計算
+            // CSS変数で回転角度と時間を設定
+            wheel.style.setProperty('--rotation', `${totalRotation}deg`);
+            wheel.style.setProperty('--duration', `${duration}s`);
+            
+            // デバッグ情報を表示
+            console.log(`選択インデックス: ${randomIndex}`);
+            console.log(`選択ペナルティ: ${penalties[randomIndex].text}`);
+            console.log(`目標角度: ${targetAngle}度`);
+            console.log(`最終角度: ${finalAngle}度`);
+            console.log(`総回転: ${totalRotation}度 (${spins}回転 + ${finalAngle}度)`);
+            
+            // アニメーション開始
             setTimeout(() => {
-                // 最終角度を正規化（0-360の範囲に）
-                const normalizedAngle = ((360 - (totalRotation % 360)) + 360) % 360;
-                const sectionAngle = 360 / penalties.length;
-                // ポインターが上にあるので、その位置のセクションを計算
-                const adjustedAngle = (normalizedAngle + (sectionAngle / 2)) % 360;
-                const selectedIndex = Math.floor(adjustedAngle / sectionAngle) % penalties.length;
-                const selectedPenalty = penalties[selectedIndex];
+                wheel.classList.add('spinning');
+            }, 10);
+            
+            // 結果を計算（事前に決定済み）
+            setTimeout(() => {
+                const selectedPenalty = penalties[randomIndex];
                 
                 // 結果表示
                 showResult(playerName, selectedPenalty);
@@ -402,7 +455,7 @@
                 
                 isSpinning = false;
                 button.disabled = false;
-            }, 4000);
+            }, duration * 1000 + 500); // アニメーション時間 + 0.5秒の余裕
         }
         
         function showResult(playerName, penalty) {
@@ -468,15 +521,38 @@
             }
         }
         
+        // デバッグ情報を表示
+        function showDebugInfo(message) {
+            if (DEBUG_MODE) {
+                const debugDiv = document.getElementById('debugInfo');
+                debugDiv.style.display = 'block';
+                const timestamp = new Date().toLocaleTimeString('ja-JP', { hour12: false, millisecond: true });
+                debugDiv.innerHTML = `[${timestamp}] ${message}<br>` + debugDiv.innerHTML;
+                // 最大10行まで表示
+                const lines = debugDiv.innerHTML.split('<br>');
+                if (lines.length > 10) {
+                    debugDiv.innerHTML = lines.slice(0, 10).join('<br>');
+                }
+            }
+        }
+        
         // 初期化
         async function init() {
             try {
                 await hardcoreDB.init();
                 console.log('Database initialized');
+                showDebugInfo('Database initialized');
             } catch (error) {
                 console.error('Failed to initialize database:', error);
+                showDebugInfo(`Database init failed: ${error.message}`);
             }
             initRoulette();
+            
+            // デバッグモードの表示
+            if (DEBUG_MODE) {
+                document.getElementById('debugInfo').style.display = 'block';
+                showDebugInfo('Debug mode enabled');
+            }
         }
         
         init();
