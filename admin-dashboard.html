@@ -400,16 +400,18 @@
         
         // 履歴クリア
         async function clearHistory() {
-            if (confirm('本当に履歴をクリアしますか？')) {
+            if (confirm('ペナルティ履歴をクリアしますか？\n（プレイヤー統計データは保持されます）')) {
                 try {
-                    await hardcoreDB.clearAllData();
-                    console.log('Database cleared');
+                    // ペナルティ履歴のみクリア（プレイヤー統計は保持）
+                    await hardcoreDB.clearPenaltyHistory();
+                    console.log('Penalty history cleared');
                 } catch (error) {
-                    console.error('Failed to clear database:', error);
+                    console.error('Failed to clear penalty history:', error);
                 }
                 localStorage.removeItem('penaltyHistory');
+                alert('ペナルティ履歴がクリアされました\n（プレイヤー統計は保持されています）');
                 loadHistory();
-                loadPlayerStats();
+                // loadPlayerStats()は呼ばない（統計は変更されないため）
             }
         }
         

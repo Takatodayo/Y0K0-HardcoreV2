@@ -264,6 +264,18 @@ class HardcoreDB {
         });
     }
     
+    // ペナルティ履歴のみクリア（プレイヤー統計は保持）
+    async clearPenaltyHistory() {
+        const transaction = this.db.transaction(['penaltyRoulette'], 'readwrite');
+        const store = transaction.objectStore('penaltyRoulette');
+        
+        return new Promise((resolve, reject) => {
+            const request = store.clear();
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    }
+    
     // 特定のプレイヤーの統計をリセット
     async clearPlayerStat(playerName) {
         const transaction = this.db.transaction(['playerStats'], 'readwrite');
